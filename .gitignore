@@ -1,0 +1,27 @@
+# Local build outputs
+/totp-auth
+/totp-auth.exe
+/dist/
+/package/
+/release/
+
+# Release archives and checksums
+*.tar.gz
+*.zip
+*.sha256
+
+# Go test and coverage artifacts
+*.test
+*.out
+coverage.*
+
+# Local environment files
+.env
+*.env
+!*.env.example
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

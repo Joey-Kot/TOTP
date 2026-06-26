@@ -1,0 +1,108 @@
+name: Build Latest Release
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.goos }} ${{ matrix.goarch }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            binary: totp-auth
+            archive: totp-auth_linux_amd64.tar.gz
+          - goos: linux
+            goarch: arm64
+            binary: totp-auth
+            archive: totp-auth_linux_arm64.tar.gz
+          - goos: windows
+            goarch: amd64
+            binary: totp-auth.exe
+            archive: totp-auth_windows_amd64.zip
+          - goos: windows
+            goarch: arm64
+            binary: totp-auth.exe
+            archive: totp-auth_windows_arm64.zip
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build
+        env:
+          CGO_ENABLED: "0"
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          mkdir -p dist package
+          go build -trimpath -ldflags="-s -w" -o "dist/${{ matrix.binary }}" .
+
+      - name: Package
+        run: |
+          cp "dist/${{ matrix.binary }}" "package/${{ matrix.binary }}"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            zip -j "${{ matrix.archive }}" "package/${{ matrix.binary }}"
+          else
+            cp packaging/systemd/totp-auth.service package/totp-auth.service
+            cp packaging/systemd/totp-auth.env.example package/totp-auth.env.example
+            tar -czf "${{ matrix.archive }}" -C package "${{ matrix.binary }}" totp-auth.service totp-auth.env.example
+          fi
+          sha256sum "${{ matrix.archive }}" > "${{ matrix.archive }}.sha256"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive }}
+          path: |
+            ${{ matrix.archive }}
+            ${{ matrix.archive }}.sha256
+          if-no-files-found: error
+
+  release:
+    name: Publish Latest Release
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git tag -f Latest "$GITHUB_SHA"
+          git push origin Latest --force
+
+          if gh release view Latest >/dev/null 2>&1; then
+            gh release edit Latest --title "Latest" --notes "Automated build from ${GITHUB_SHA}." --latest
+          else
+            gh release create Latest --title "Latest" --notes "Automated build from ${GITHUB_SHA}." --target "$GITHUB_SHA" --latest
+          fi
+
+          gh release upload Latest release/* --clobber

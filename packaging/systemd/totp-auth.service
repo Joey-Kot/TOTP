@@ -1,0 +1,45 @@
+[Unit]
+Description=totp-auth authentication service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=totp-auth
+Group=totp-auth
+EnvironmentFile=/etc/totp-auth/totp-auth.env
+ExecStart=/usr/local/bin/totp-auth \
+    --listen=${LISTEN_ADDR} \
+    --cookie-name=${COOKIE_NAME} \
+    --cookie-domain=${COOKIE_DOMAIN} \
+    --cookie-max-age=${COOKIE_MAX_AGE} \
+    --default-redirect=${DEFAULT_REDIRECT} \
+    --secure-cookie=${SECURE_COOKIE} \
+    --only-totp=${ONLY_TOTP} \
+    --allowed-redirect-hosts=${ALLOWED_REDIRECT_HOSTS} \
+    --login-rate-limit=${LOGIN_RATE_LIMIT_ATTEMPTS} \
+    --login-rate-window=${LOGIN_RATE_LIMIT_WINDOW}
+
+Restart=on-failure
+RestartSec=3s
+TimeoutStopSec=10s
+KillSignal=SIGINT
+
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+
+[Install]
+WantedBy=multi-user.target
