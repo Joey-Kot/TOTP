@@ -877,134 +877,310 @@ const loginHTML = `<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Login</title>
   <style>
+    /* ===== Reset & Variables ===== */
+
     :root {
       color-scheme: light;
-      --bg: #f7f7f5;
+      --bg: #f5f5f0;
       --panel: #ffffff;
-      --text: #111111;
-      --muted: #6f6f6f;
-      --line: #d9d9d6;
-      --line-strong: #9f9f9a;
-      --danger: #b42318;
-      --focus: #111111;
+      --text: #1a1a1a;
+      --text-secondary: #5c5c5c;
+      --muted: #8a8a80;
+      --line: #e2e2da;
+      --line-focus: #b0b0a8;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --danger-border: #fecaca;
+      --focus-ring: rgba(26, 26, 26, 0.15);
+      --brand: #1a1a1a;
+      --brand-hover: #333333;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-smooth: 250ms cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     html,
     body {
       min-height: 100%;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     body {
-      margin: 0;
       background: var(--bg);
+      background-image:
+        radial-gradient(circle at 20% 50%, rgba(0, 0, 0, 0.02) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(0, 0, 0, 0.02) 0%, transparent 50%),
+        radial-gradient(circle at 50% 80%, rgba(0, 0, 0, 0.01) 0%, transparent 50%);
       color: var(--text);
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       font-size: 16px;
-      line-height: 1.5;
+      line-height: 1.6;
     }
+
+    /* ===== Layout ===== */
 
     main {
       min-height: 100vh;
+      min-height: 100dvh;
       display: grid;
       place-items: center;
-      padding: 32px 16px;
+      padding: 24px 16px;
     }
 
     .panel {
-      width: min(100%, 400px);
-      padding: 32px;
+      width: min(100%, 420px);
+      padding: 40px 36px;
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.08);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg), var(--shadow-xs);
+      animation: panel-enter 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
-    h1 {
-      margin: 0 0 24px;
-      font-size: 28px;
-      font-weight: 600;
-      line-height: 1.2;
+    @keyframes panel-enter {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
+
+    /* ===== Header ===== */
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #1a1a1a 0%, #3a3a3a 100%);
+      box-shadow: 0 4px 14px rgba(26, 26, 26, 0.2);
+      color: #ffffff;
+    }
+
+    .brand-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .brand-text {
+      text-align: center;
+    }
+
+    .brand-text h1 {
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+
+    .brand-text p {
+      margin-top: 4px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    /* ===== Form ===== */
 
     form {
       display: grid;
-      gap: 12px;
+      gap: 18px;
     }
 
-    label {
+    .field {
       display: grid;
       gap: 6px;
-      color: var(--muted);
-      font-size: 14px;
     }
 
-    input {
+    .field-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-wrap input {
       width: 100%;
       min-height: 48px;
-      padding: 12px 14px;
-      border: 1px solid var(--line);
-      border-radius: 6px;
+      padding: 0 16px;
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius-sm);
       background: #ffffff;
       color: var(--text);
       font: inherit;
+      font-size: 15px;
       outline: none;
-      transition: border-color 120ms ease, box-shadow 120ms ease;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
     }
 
-    input:focus {
-      border-color: var(--focus);
-      box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.12);
+    .input-wrap input:hover {
+      border-color: var(--line-focus);
     }
 
-    input::placeholder {
-      color: var(--line-strong);
+    .input-wrap input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 4px var(--focus-ring);
+      background: #fafafa;
     }
+
+    .input-wrap input::placeholder {
+      color: #bfbfb6;
+    }
+
+    /* ===== TOTP input ===== */
+
+    .totp-input {
+      font-size: 28px !important;
+      font-weight: 500;
+      letter-spacing: 0.45em;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .digit-track {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .digit-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--line);
+      transition: background var(--transition-fast), transform var(--transition-fast);
+    }
+
+    .digit-dot.filled {
+      background: var(--brand);
+      transform: scale(1.15);
+    }
+
+    /* ===== Button ===== */
 
     button {
       width: 100%;
       min-height: 48px;
-      margin-top: 4px;
+      margin-top: 8px;
       border: 0;
-      border-radius: 6px;
-      background: #111111;
+      border-radius: var(--radius-sm);
+      background: var(--brand);
       color: #ffffff;
       font: inherit;
+      font-size: 15px;
       font-weight: 600;
+      letter-spacing: 0.01em;
       cursor: pointer;
-      transition: background 120ms ease, transform 120ms ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
     }
 
     button:hover {
-      background: #2b2b2b;
+      background: var(--brand-hover);
+      box-shadow: 0 4px 14px rgba(26, 26, 26, 0.2);
     }
 
     button:active {
-      transform: translateY(1px);
+      transform: scale(0.98);
     }
 
-    .error {
-      min-height: 24px;
-      margin: 16px 0 0;
+    button:focus-visible {
+      outline: 2px solid var(--brand);
+      outline-offset: 2px;
+    }
+
+    /* ===== Error ===== */
+
+    .error-box {
+      margin-top: 4px;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
       color: var(--danger);
       font-size: 14px;
+      font-weight: 450;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.4;
+      animation: error-enter 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
     }
+
+    .error-box svg {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+    }
+
+    @keyframes error-enter {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .error-box:empty {
+      display: none;
+    }
+
+    /* ===== Responsive ===== */
 
     @media (max-width: 480px) {
       main {
         align-items: start;
-        padding-top: 48px;
+        padding-top: 32px;
       }
 
       .panel {
-        padding: 24px;
+        padding: 28px 22px;
+        border-radius: var(--radius-md);
       }
 
-      h1 {
-        font-size: 24px;
+      .brand-text h1 {
+        font-size: 22px;
+      }
+
+      .totp-input {
+        font-size: 24px !important;
+        letter-spacing: 0.35em;
       }
     }
   </style>
@@ -1012,27 +1188,93 @@ const loginHTML = `<!doctype html>
 <body>
   <main>
     <section class="panel" aria-labelledby="login-title">
-      <h1 id="login-title">{{ .Title }}</h1>
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            <circle cx="12" cy="16" r="1"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1 id="login-title">{{ .Title }}</h1>
+          <p>Enter your TOTP code to continue</p>
+        </div>
+      </div>
+
       <form method="post" action="/login?rd={{ .RD | urlquery }}">
         {{ if not .OnlyTOTP }}
-        <label>
-          Username
-          <input name="username" autocomplete="username">
-        </label>
-        <label>
-          Password
-          <input name="password" type="password" autocomplete="current-password">
-        </label>
+        <div class="field">
+          <span class="field-label">Username</span>
+          <div class="input-wrap">
+            <input name="username" autocomplete="username" placeholder="Enter your username">
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label">Password</span>
+          <div class="input-wrap">
+            <input name="password" type="password" autocomplete="current-password" placeholder="Enter your password">
+          </div>
+        </div>
         {{ end }}
-        <label>
-          TOTP code
-          <input name="code" inputmode="numeric" autocomplete="one-time-code" autofocus>
-        </label>
-        <button type="submit">Continue</button>
+        <div class="field">
+          <span class="field-label">TOTP code</span>
+          <div class="input-wrap">
+            <input name="code"
+                   class="totp-input"
+                   inputmode="numeric"
+                   autocomplete="one-time-code"
+                   autofocus
+                   maxlength="6"
+                   placeholder="000000"
+                   oninput="updateDigits(this)">
+          </div>
+          <div class="digit-track" aria-hidden="true">
+            <span class="digit-dot"></span>
+            <span class="digit-dot"></span>
+            <span class="digit-dot"></span>
+            <span class="digit-dot"></span>
+            <span class="digit-dot"></span>
+            <span class="digit-dot"></span>
+          </div>
+        </div>
+        <button type="submit" id="submit-btn">
+          <span class="btn-label">Verify</span>
+          <svg class="btn-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/>
+            <path d="m12 5 7 7-7 7"/>
+          </svg>
+        </button>
       </form>
-      <div class="error" role="status" aria-live="polite">{{ .Error }}</div>
+
+      {{ if .Error }}
+      <div class="error-box" role="status" aria-live="polite">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>{{ .Error }}</span>
+      </div>
+      {{ else }}
+      <div class="error-box" role="status" aria-live="polite"></div>
+      {{ end }}
     </section>
   </main>
+
+  <script>
+    function updateDigits(input) {
+      const dots = document.querySelectorAll('.digit-dot');
+      const value = input.value.replace(/\D/g, '').slice(0, 6);
+      dots.forEach((dot, i) => {
+        if (i < value.length) {
+          dot.classList.add('filled');
+        } else {
+          dot.classList.remove('filled');
+        }
+      });
+    }
+  </script>
 </body>
 </html>
 `
